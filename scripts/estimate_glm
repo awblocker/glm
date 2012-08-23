@@ -1,0 +1,167 @@
+#!python
+
+# Load libraries
+import sys
+import getopt
+
+import numpy as np
+
+import glm
+
+# Define constants
+
+HELP = '''
+Usage: estimate_glm [options] Y X
+
+Estimate GLM using given outcomes and predictors. Each should be in tabular
+format, readable by numpy.loadtxt with the (optionally) specified delimiter.
+
+Y should load as a 1-dimensional vector (of size n).
+
+X should load as a n x p matrix.
+
+Prints estimated coefficients and, optionally, additional information to stdout.
+
+Options:
+  -h, --help            Show this help message and exit
+  --family=             Family for GLM; defaults to Gaussian.
+  --link=               Link for GLM; defaults to identity.
+  --dispersion          Estimate dispersion; defaults to false.
+  --delimiter=          Specify delimiter for input files. Defaults to ','.
+  -w, --weights=        Specify optional file of weights.
+  --se                  Report asymptotic standard errors for coefficients
+  --info                Report Fisher information matrix evaluated at MLE
+  --cov                 Report asymptotic covariance matrix evaluated at MLE
+  --maxiter=            Maximum number of Fisher scoring iterations
+  --lsmethod=           Decompositions for WLS; defaults to cholesky, can be qr
+
+'''
+
+def main(argv):
+    '''
+    Main function for option-parsing and coordinaton.
+    
+    Takes sys.argv[1:] as input.
+    '''
+    # Set default values for options
+    family          = 'Gaussian'
+    link            = 'Identity'
+    est_dispersion  = False
+    report_se       = False
+    report_info     = False
+    report_cov      = False
+    path_weights    = None
+    delimiter       = ','
+    lsmethod        = 'cholesky'
+    maxiter         = 100
+    
+    # Parse arguments and options
+    opts, args = getopt.getopt(argv, 'hw:',
+                               ['help', 'family=', 'link=', 'dispersion',
+                                'weights=', 'se', 'info', 'cov',
+                                'lsmethod=', 'maxiter='])
+    for option, value in opts:
+        if option in ('-h', '--help'):
+            print >> sys.stderr, HELP
+            sys.exit(2)
+        elif option == '--family':
+            family = value.title()
+        elif option == '--link':
+            link = value.title()
+        elif option == '--dispersion':
+            est_dispersion = True
+        elif option == '--delimiter':
+            delimiter = value
+        elif option in ('-w', '--weights'):
+            path_weights = value
+        elif option == '--se':
+            report_se = True
+        elif option == '--info':
+            report_info = True
+        elif option == '--cov':
+            report_cov = True
+        elif option == '--lsmethod':
+            lsmethod = value.lower()
+        elif option == '--maxiter':
+            maxiter = int(value)
+        else:
+            print >> sys.stderr, 'Error -- unknown option %s' % option
+            sys.exit(1)
+
+    if len(args) > 1:
+        path_y = args[0]
+        path_X = args[1]
+    else:
+        print >> sys.stderr, 'Error -- need paths to X and Y'
+        sys.exit(1)
+
+    # Get family
+    try:
+        family_class = getattr(glm.families, family)
+        link_class = getattr(glm.links, link)
+        family_obj = family_class(link_class)
+    except:
+        print >> sys.stderr, ('Error -- family %s not available with link %s' %
+                              (family, link))
+        sys.exit(1)
+
+    # Choose whether to compute covariance
+    compute_cov = (report_cov or report_se)
+    
+    # Load outcome and predictors
+    y = np.loadtxt(path_y, delimiter=delimiter)
+    X = np.loadtxt(path_X, delimiter=delimiter)
+    
+    if path_weights is None:
+        weights = 1
+    if path_weights is not None:
+        # Load weights
+        weights = np.loadtxt(path_weights, delimiter=delimiter)
+    
+    # Estimate glm
+    fit = glm.glm(y=y, X=X, family=family_obj, w=weights, cov=compute_cov,
+                  info=report_info, maxIter=maxiter, ls_method=lsmethod)
+    
+    if est_dispersion:
+        # Estimate dispersion, if requested
+        dispersion = glm.estimate_dispersion(y=y, X=X, family=family_obj,
+                                             **fit)
+    else:
+        dispersion = 1.
+    
+    # Print family and link
+    print >> sys.stdout, '# Family : %s\n#Link : %s' % (family, link)
+
+    # Report coefficients first
+    print >> sys.stdout, '# Coefficients'
+    np.savetxt(fname=sys.stdout, X=(fit['b_hat'],), delimiter=delimiter)
+
+    # Report dispersion
+    if est_dispersion:
+        print >> sys.stdout, '# Dispersion parameter (estimated)'
+    else:
+        print >> sys.stdout, '# Dispersion parameter (fixed)'
+
+    print >> sys.stdout, '%g' % dispersion
+
+    # Compute and report standard errors, if needed
+    if report_se:
+        se = np.sqrt(dispersion) * np.sqrt(np.diag(fit['V']))
+        print >> sys.stdout, '# Asymptotic std. errors'
+        np.savetxt(fname=sys.stdout, X=(se,), delimiter=delimiter)
+
+    if report_cov:
+        # Report asymptotic covariance, if requested
+        print >> sys.stdout, '# Asymptotic covariance matrix'
+        np.savetxt(fname=sys.stdout, X=np.sqrt(dispersion) * fit['V'],
+                   delimiter=delimiter)
+
+    if report_info:
+        # Report Fisher information matrix evaluated at MLE, if requested
+        print >> sys.stdout, '# Fisher information matrix evaluated at MLE'
+        np.savetxt(fname=sys.stdout, X=fit['I'] / np.sqrt(dispersion),
+                   delimiter=delimiter)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
+

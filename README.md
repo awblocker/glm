@@ -10,11 +10,12 @@ The latter is build for easy integration with MCMC routines and has (reasonably)
 safe defaults.
 
 Two scripts are also included, `estimate_glm` and `mcmc_glm`. Both read data in
-a tabular format (using `numpy.loadtxt`), assuming the first column is the
-outcome variable, the subsequent columns are predictors, and the final column is
-(optionally) weights. The `estimate_glm` script will print the coefficient
-estimates and, if requested, information and covariance matrices, to `stdout`.
-The `mcmc_glm` script will print the requested number of MCMC draws to `stdout`.
+a tabular format (using `numpy.loadtxt`), assuming one file contains the outcome
+variable and the other file contains a single predictor per column.  An optional
+file of weights can also be included. The `estimate_glm` script will print the
+coefficient estimates and, if requested, information and covariance matrices, to
+`stdout`.  The `mcmc_glm` script will print the requested number of MCMC draws
+to `stdout`.
 
 Only the binomial and Poisson families are currently implemented with a few
 commonly used link functions. The Gamma family will be added shortly, followed

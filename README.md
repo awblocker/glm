@@ -35,8 +35,8 @@ inference with complex observation error models in LC/MSMS proteomics, but I
 have come see it as a necessary component for much of the Python statistical
 community. It will be maintained and community involvement is welcome.
 
-I recommend the (patsy)[https://github.com/pydata/patsy] package for building
+I recommend the [patsy](https://github.com/pydata/patsy) package for building
 design matrices from given formulas. You might also find the
-(pandas)[http://pandas.pydata.org/] package useful for data management; it has
+[pandas](http://pandas.pydata.org/) package useful for data management; it has
 been very carefully built for speed and reliability.
 

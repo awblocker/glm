@@ -84,6 +84,35 @@ class Family:
 # Particular familes for GLMs
 #==============================================================================
 
+class Gaussian(Family):
+    '''
+    Family for Gaussian GLMs
+    '''
+    links = [L.Identity]
+    
+    def __init__(self, link=L.Log):
+        self.link = link()
+    
+    def var(self, mu):
+        '''
+        Gaussian variance function
+        '''
+        return np.ones_like(mu)
+        
+    def loglik(self, y, mu, w=1):
+        '''
+        Compute log-likelihood of observations given means mu and weights
+        (input, not Fisher).
+        '''
+        return np.sum(w*(y-mu)**2)
+    
+    def deviance(self, y, mu, w=1):
+        '''
+        Compute deviance of observations given means mu and weights
+        (input, not Fisher).
+        '''
+        return np.sum(w*(y-mu)**2)
+
 class Binomial(Family):
     '''
     Family for binomial GLMs
@@ -126,7 +155,6 @@ class Binomial(Family):
             # Binomial case with n > 1
             return 2.*np.sum(y*np.log(y/w/mu + EPS) +
                              (w-y)*y*np.log((1.-y/w)/(1.-mu) + EPS))
-
 
 class Poisson(Family):
     '''

@@ -161,3 +161,25 @@ class Cloglog(Link):
         eta = np.minimum(eta, 700)
         return np.maximum(np.exp(eta)*np.exp(-np.exp(eta)), EPS)
 
+class Inverse(Link):
+    '''
+    Inverse link.
+    '''
+    def __call__(self, mu):
+        '''
+        Inverse link function
+        '''
+        return 1./mu
+    
+    def inv(self, eta):
+        '''
+        Inverse of inverse link function
+        '''
+        return 1./eta
+    
+    def deriv(self, eta):
+        '''
+        Derivative of inverse inverse link function with respect to eta.
+        '''
+        return -1./eta**2
+

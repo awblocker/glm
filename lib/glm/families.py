@@ -90,7 +90,7 @@ class Gaussian(Family):
     '''
     links = [L.Identity]
     
-    def __init__(self, link=L.Log):
+    def __init__(self, link=L.Identity):
         self.link = link()
     
     def var(self, mu):

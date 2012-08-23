@@ -88,7 +88,7 @@ class Gaussian(Family):
     '''
     Family for Gaussian GLMs
     '''
-    links = [L.Identity]
+    links = [L.Identity, L.Log, L.Inverse]
     
     def __init__(self, link=L.Identity):
         self.link = link()
@@ -160,7 +160,7 @@ class Poisson(Family):
     '''
     Family for Poisson GLMs
     '''
-    links = [L.Log]
+    links = [L.Log, L.Identity]
     
     def __init__(self, link=L.Log):
         self.link = link()
@@ -186,3 +186,37 @@ class Poisson(Family):
         y_over_mu = y / mu
         y_over_mu[y==0] = 1.
         return 2.*np.sum(w*(y*np.log(y_over_mu) - (y-mu)))
+
+class Gamma(Family):
+    '''
+    Family for Gamma GLMs
+    '''
+    links = [L.Log, L.Identity, L.Inverse]
+    
+    def __init__(self, link=L.Log):
+        self.link = link()
+    
+    def var(self, mu):
+        '''
+        Gamma variance function
+        '''
+        return mu**2
+        
+    def loglik(self, y, mu, w=1):
+        '''
+        Compute log-likelihood of observations given means mu and weights
+        (input, not Fisher).
+        '''
+        y_over_mu = y / mu
+        y_over_mu[y==0] = 1.
+        return np.sum(w*( np.log(y_over_mu) - y/mu ))
+    
+    def deviance(self, y, mu, w=1):
+        '''
+        Compute deviance of observations given means mu and weights
+        (input, not Fisher).
+        '''
+        y_over_mu = y / mu
+        y_over_mu[y==0] = 1.
+        return 2.*np.sum(w*(np.log(y_over_mu) - y/mu))
+

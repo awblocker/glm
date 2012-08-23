@@ -9,10 +9,10 @@ function for independence-chain Metropolis-Hastings steps with arbitrary GLMs.
 The latter is build for easy integration with MCMC routines and has (reasonably)
 safe defaults.
 
-The `estimate_glm` is included with the package. Both read data in a tabular
-format (using `numpy.loadtxt`), assuming one file contains the outcome variable
-and the other file contains a single predictor per column.  An optional file of
-weights can also be included. The `estimate_glm` script will print the
+The `estimate_glm` script is included with the package. Both read data in a
+tabular format (using `numpy.loadtxt`), assuming one file contains the outcome
+variable and the other file contains a single predictor per column.  An optional
+file of weights can also be included. The `estimate_glm` script will print the
 coefficient estimates and, if requested, information and covariance matrices, to
 `stdout`.
 

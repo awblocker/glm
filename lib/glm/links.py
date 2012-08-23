@@ -46,6 +46,28 @@ class Link:
 # Particular link functions
 #==============================================================================
 
+class Identity(Link):
+    '''
+    Identity link.
+    '''
+    def __call__(self, mu):
+        '''
+        Identity link function
+        '''
+        return mu
+    
+    def inv(self, eta):
+        '''
+        Inverse of identity link function (trivial)
+        '''
+        return eta
+    
+    def deriv(self, eta):
+        '''
+        Derivative of identity link function with respect to eta.
+        '''
+        return np.ones_like(eta)
+
 class Log(Link):
     '''
     Log link, base e.

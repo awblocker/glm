@@ -79,7 +79,10 @@ def glm(y, X, family, w=1, offset=0, cov=False, info=False,
     
     cov and info are switches to return the approximate covariance matrix of the 
     coefficients (as V) and the Fisher information matrix for the coefficients
-    (as I).
+    (as I). The reported covariance and information use a fixed dispersion of 1,
+    as the dispersion parameter does not affect the estimation process. The
+    dispersion parameter can be estimated separately using the
+    estimate_dispersion function.
     
     tol is the convergence tolerance for the IRLS iterations. The iterations
     stop when |dev - dev_last| / (|dev| + 0.1) < tol.
@@ -169,7 +172,31 @@ def glm(y, X, family, w=1, offset=0, cov=False, info=False,
         result['V'] = V
     
     return result
-    
+   
+def estimate_dispersion(b_hat, y, X, family, w=1, offset=0, **kwargs):
+    '''
+    Estimate dispersion parameter using the residual chi-squared statistic.
+
+    Returns a (scalar) estimate of the dispersion parameter.
+    '''
+    # Get eta and mu
+    eta = np.dot(X, b_hat)
+    mu = family.link.inv(eta)
+
+    # Compute weight from IWLS iterations
+    weights_ls = w*family.weights(mu)
+        
+    # Compute surrogate residuals from IWLS
+    resid = (y-mu)/family.link.deriv(eta) - offset
+
+    # Compute residual df
+    df_residual = X.shape[0] - X.shape[1]
+
+    # Estimate dispersion
+    dispersion = np.mean(weights_ls*resid**2) * (resid.size*1./df_residual)
+
+    return dispersion
+
 def mh_update_glm_coef(b_prev, b_hat, y, X, family, w=1, I=None, V=None,
                        propDf=5., prior_log_density=None, prior_args=tuple(),
                        prior_kwargs={}, **kwargs):

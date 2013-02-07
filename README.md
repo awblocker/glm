@@ -23,7 +23,7 @@ coefficients. It will take the same inputs as `estimate_glm` and print the
 requested number of MCMC draws to `stdout`.
 
 The Gaussian, binomial, gamma, and Poisson families are currently implemented
-with a the most commonly used link functions. The negative binomial family will
+with the most commonly used link functions. The negative binomial family will
 be added shortly, using an alternating optimization scheme.
 
 All implemented families and links have been validated against R's `glm`

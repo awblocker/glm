@@ -277,4 +277,78 @@ def mh_update_glm_coef(b_prev, b_hat, y, X, family, w=1, I=None, V=None,
         return (b_prop, True)
     else:
         return (b_prev, False)
-        
+
+
+def score(b, y, X, family, w=1, **kwargs):
+    '''
+    Compute score (gradient of log-likelihood) evaluated at b.
+
+    b is assumed to be a p x m matrix with each column corresponding to a vector
+    of coefficients.
+    
+    Returns a p x m matrix of score vectors.
+    '''
+    # Get dimensions
+    p = X.shape[1]
+
+    # Expand b to matrix if necessary
+    if type(b) is not np.ndarray:
+        b = np.array(b)
+    if len(np.shape(b)) < 2:
+        b = b[:, np.newaxis]
+
+    # Check for agreement in dimensions
+    if b.shape[0] != p:
+        raise ValueError('# of rows in b did not match # of columns in X.')
+
+    # Compute eta and mu
+    eta = np.dot(X, b)
+    mu  = family.link.inv(eta)
+
+    # Compute weights and derivatives
+    weights = (w * family.weights(mu).T).T
+    dmu_deta = family.link.deriv(eta)
+
+    # Compute score
+    score = np.dot(X.T, weights / dmu_deta * (y - mu.T).T)
+
+    return score
+
+def obs_info(b, y, X, family, w=1, **kwargs):
+    '''
+    Compute observed information (negative Hessian of log-likelihood) evaluated
+    at b.
+
+    b is assumed to be a p-length array or p x 1 matrix.
+    
+    Returns a p x p information matrix.
+    '''
+    # Get dimensions
+    p = X.shape[1]
+
+    # Expand b to matrix if necessary
+    if type(b) is not np.ndarray:
+        b = np.array(b)
+    if len(np.shape(b)) < 2:
+        b = b[:, np.newaxis]
+
+    # Check for agreement in dimensions
+    if b.shape[0] != p:
+        raise ValueError('# of rows in b did not match # of columns in X.')
+
+    # Compute eta and mu
+    eta = np.dot(X, b)
+    mu  = family.link.inv(eta)
+
+    # Compute weights and derivatives
+    weights = w * family.weights(mu)
+
+    # Compute score
+    Xtw = np.sqrt(weights)[:,0] * X.T
+    I_obs = np.dot(Xtw, Xtw.T)
+
+    return I_obs
+
+    
+
+

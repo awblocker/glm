@@ -3,7 +3,7 @@ from scipy import special
 
 import links as L
 
-EPS = np.spacing(1)
+EPS = np.spacing(1.)
 
 #==============================================================================
 # Skeleton parent class for all families
@@ -126,7 +126,7 @@ class Binomial(Family):
         '''
         Binomial variance function
         '''
-        return mu*(1.-mu)
+        return np.maximum(mu*(1.-mu), np.sqrt(EPS))
     
     def mu_init(self, y):
         '''

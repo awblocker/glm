@@ -99,7 +99,8 @@ class Logit(Link):
         '''
         Logit link function
         '''
-        return np.log(mu/(1.-mu))
+        return np.maximum(np.log(EPS), np.minimum(np.log(mu/(1.-mu)),
+                                                  -np.log(EPS)))
     
     def inv(self, eta):
         '''

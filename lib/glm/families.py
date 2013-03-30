@@ -141,7 +141,8 @@ class Binomial(Family):
         Compute log-likelihood of observations given means mu and weights
         (input, not Fisher).
         '''
-        return y*np.log(mu/(1-mu) + EPS) + w*np.log(1.-mu + EPS)
+        return (y*(np.log(mu + EPS) - np.log(1. - mu + EPS)) +
+                w*np.log(1. - mu + EPS))
     
     def deviance(self, y, mu, w=1):
         '''
